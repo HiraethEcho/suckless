@@ -244,7 +244,7 @@
  *
  * https://tools.suckless.org/dmenu/patches/pipeout/
  */
-#define PIPEOUT_PATCH 0
+#define PIPEOUT_PATCH 1
 
 /* Lifted from the listfullwidth patch this simple change just avoids colors for the prompt (with
  * the -p option or in config.h) by making it use the same style as the rest of the input field.
