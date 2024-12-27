@@ -10,3 +10,4 @@ surf/surf
 *.o
 *.1
 dmenu/stest
+dwm/dwm
