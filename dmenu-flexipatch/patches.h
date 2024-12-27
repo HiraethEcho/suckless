@@ -270,6 +270,7 @@
  * items.
  * https://tools.suckless.org/dmenu/patches/printindex/
  */
+// TODO: try this
 #define PRINTINDEX_PATCH 0
 
 /* This patch adds a flag (-t) which makes Return key to ignore selection and print the input
@@ -314,7 +315,7 @@
  *
  * https://tools.suckless.org/dmenu/patches/scroll/
  */
-#define SCROLL_PATCH 0
+#define SCROLL_PATCH 1
 
 /* This patch adds -d and -D flags which separates the input into two halves; one half to be
  * displayed in dmenu and the other to be printed to stdout. This patch takes precedence over
