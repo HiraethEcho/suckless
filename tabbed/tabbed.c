@@ -11,13 +11,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <X11/Xatom.h>
-#include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
 #include <X11/XKBlib.h>
 #include <X11/Xft/Xft.h>
 
+#include "patches.h"
 #include "arg.h"
 
 /* XEMBED messages */
@@ -49,8 +49,16 @@
 #define TEXTW(x)                (textnw(x, strlen(x)) + dc.font.height)
 
 enum { ColFG, ColBG, ColLast };       /* color */
-enum { WMProtocols, WMDelete, WMName, WMState, WMFullscreen,
-       XEmbed, WMSelectTab, WMLast }; /* default atoms */
+enum {
+	WMProtocols,
+	WMDelete,
+	WMName,
+	WMState,
+	WMFullscreen,
+	XEmbed,
+	WMSelectTab,
+	WMLast
+}; /* default atoms */
 
 typedef union {
 	int i;
@@ -59,7 +67,11 @@ typedef union {
 
 typedef struct {
 	unsigned int mod;
+	#if KEYCODE_PATCH
+	KeyCode keycode;
+	#else
 	KeySym keysym;
+	#endif // KEYCODE_PATCH
 	void (*func)(const Arg *);
 	const Arg arg;
 } Key;
@@ -126,6 +138,7 @@ static void run(void);
 static void sendxembed(int c, long msg, long detail, long d1, long d2);
 static void setcmd(int argc, char *argv[], int);
 static void setup(void);
+static void sigchld(int unused);
 static void spawn(const Arg *arg);
 static int textnw(const char *text, unsigned int len);
 static void toggle(const Arg *arg);
@@ -135,6 +148,8 @@ static void updatenumlockmask(void);
 static void updatetitle(int c);
 static int xerror(Display *dpy, XErrorEvent *ee);
 static void xsettitle(Window w, const char *str);
+
+#include "patch/include.h"
 
 /* variables */
 static int screen;
@@ -152,7 +167,10 @@ static void (*handler[LASTEvent]) (const XEvent *) = {
 	[MapRequest] = maprequest,
 	[PropertyNotify] = propertynotify,
 };
-static int bh, obh, wx, wy, ww, wh, vbh;
+static int bh, obh, wx, wy, ww, wh;
+#if AUTOHIDE_PATCH
+static int vbh;
+#endif // AUTOHIDE_PATCH
 static unsigned int numlockmask;
 static Bool running = True, nextfocus, doinitspawn = True,
             fillagain = False, closelastclient = False,
@@ -168,12 +186,20 @@ static int cmd_append_pos;
 static char winid[64];
 static char **cmd;
 static char *wmname = "tabbed";
+static char *wmclass = "tabbed";
 static const char *geometry;
+
+#if ALPHA_PATCH
+static Colormap cmap;
+static Visual *visual = NULL;
+#endif // ALPHA_PATCH
 
 char *argv0;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
+
+#include "patch/include.c"
 
 void
 buttonpress(const XEvent *e)
@@ -182,7 +208,11 @@ buttonpress(const XEvent *e)
 	int i, fc;
 	Arg arg;
 
+	#if BOTTOM_TABS_PATCH
+	if (ev->y < wh - bh)
+	#else
 	if (ev->y < 0 || ev->y > bh)
+	#endif // BOTTOM_TABS_PATCH
 		return;
 
 	if (((fc = getfirsttab()) > 0 && ev->x < TEXTW(before)) || ev->x < 0)
@@ -254,8 +284,13 @@ configurenotify(const XEvent *e)
 		ww = ev->width;
 		wh = ev->height;
 		XFreePixmap(dpy, dc.drawable);
+		#if ALPHA_PATCH
+		dc.drawable = XCreatePixmap(dpy, win, ww, wh,
+		              32);
+		#else
 		dc.drawable = XCreatePixmap(dpy, root, ww, wh,
 		              DefaultDepth(dpy, screen));
+		#endif // ALPHA_PATCH
 
 		if (!obh && (wh <= bh)) {
 			obh = bh;
@@ -324,30 +359,61 @@ void
 drawbar(void)
 {
 	XftColor *col;
-	int c, cc, fc, width, nbh, i;
+	int c, cc, fc, width;
+	#if AUTOHIDE_PATCH
+	int nbh;
+	#endif // AUTOHIDE_PATCH
 	char *name = NULL;
+	#if CLIENTNUMBER_PATCH
+	char tabtitle[312];
+	#endif // CLIENTNUMBER_PATCH
+	#if BOTTOM_TABS_PATCH
+	int by = wh - bh;
+	#else
+	int by = 0;
+	#endif // BOTTOM_TABS_PATCH
+
+	#if AUTOHIDE_PATCH
+	nbh = nclients > 1 ? vbh : 0;
+	if (nbh != bh) {
+		bh = nbh;
+		#if BOTTOM_TABS_PATCH
+		by = wh - bh;
+		#endif // BOTTOM_TABS_PATCH
+		for (c = 0; c < nclients; c++)
+			#if BOTTOM_TABS_PATCH
+			XMoveResizeWindow(dpy, clients[c]->win, 0, 0, ww, wh - bh);
+			#else
+			XMoveResizeWindow(dpy, clients[c]->win, 0, bh, ww, wh - bh);
+			#endif // BOTTOM_TABS_PATCH
+	}
+	#endif // AUTOHIDE_PATCH
 
 	if (nclients == 0) {
 		dc.x = 0;
 		dc.w = ww;
 		XFetchName(dpy, win, &name);
 		drawtext(name ? name : "", dc.norm);
-		XCopyArea(dpy, dc.drawable, win, dc.gc, 0, 0, ww, vbh, 0, 0);
+		#if AUTOHIDE_PATCH
+		XCopyArea(dpy, dc.drawable, win, dc.gc, 0, 0, ww, vbh, 0, by);
+		#else
+		XCopyArea(dpy, dc.drawable, win, dc.gc, 0, 0, ww, bh, 0, by);
+		#endif // AUTOHIDE_PATCH
 		XSync(dpy, False);
 
 		return;
 	}
 
-	nbh = nclients > 1 ? vbh : 0;
-	if (bh != nbh) {
-		bh = nbh;
-		for (i = 0; i < nclients; i++)
-			XMoveResizeWindow(dpy, clients[i]->win, 0, bh, ww, wh - bh);
-		}
+	#if AUTOHIDE_PATCH
 	if (bh == 0)
 		return;
+	#endif // AUTOHIDE_PATCH
 
 	width = ww;
+
+	#if AWESOMEBAR_PATCH
+	tabwidth = ww / nclients;
+	#endif // AWESOMEBAR_PATCH
 	cc = ww / tabwidth;
 	if (nclients > cc)
 		cc = (ww - TEXTW(before) - TEXTW(after)) / tabwidth;
@@ -376,11 +442,17 @@ drawbar(void)
 		} else {
 			col = clients[c]->urgent ? dc.urg : dc.norm;
 		}
+		#if CLIENTNUMBER_PATCH
+		snprintf(tabtitle, sizeof(tabtitle), "%d: %s",
+		         c + 1, clients[c]->name);
+		drawtext(tabtitle, col);
+		#else
 		drawtext(clients[c]->name, col);
+		#endif // CLIENTNUMBER_PATCH
 		dc.x += dc.w;
 		clients[c]->tabx = dc.x;
 	}
-	XCopyArea(dpy, dc.drawable, win, dc.gc, 0, 0, ww, bh, 0, 0);
+	XCopyArea(dpy, dc.drawable, win, dc.gc, 0, 0, ww, bh, 0, by);
 	XSync(dpy, False);
 }
 
@@ -411,12 +483,18 @@ drawtext(const char *text, XftColor col[ColLast])
 
 	memcpy(buf, text, len);
 	if (len < olen) {
-		for (i = len, j = strlen(titletrim); j && i;
-		     buf[--i] = titletrim[--j])
-			;
+		for (i = len, j = strlen(titletrim); j && i; buf[--i] = titletrim[--j]);
 	}
+	#if CENTER_PATCH
+	else
+		x += (dc.w - TEXTW(buf)) / 2; // center text
+	#endif // CENTER_PATCH
 
+	#if ALPHA_PATCH
+	d = XftDrawCreate(dpy, dc.drawable, visual, cmap);
+	#else
 	d = XftDrawCreate(dpy, dc.drawable, DefaultVisual(dpy, screen), DefaultColormap(dpy, screen));
+	#endif // ALPHA_PATCH
 	XftDrawStringUtf8(d, &col[ColFG], dc.font.xfont, x, y, (XftChar8 *) buf, len);
 	XftDrawDestroy(d);
 }
@@ -584,7 +662,11 @@ getcolor(const char *colstr)
 {
 	XftColor color;
 
+	#if ALPHA_PATCH
+	if (!XftColorAllocName(dpy, visual, cmap, colstr, &color))
+	#else
 	if (!XftColorAllocName(dpy, DefaultVisual(dpy, screen), DefaultColormap(dpy, screen), colstr, &color))
+		#endif // ALPHA_PATCH
 		die("%s: cannot allocate color '%s'\n", argv0, colstr);
 
 	return color;
@@ -671,11 +753,18 @@ keypress(const XEvent *e)
 {
 	const XKeyEvent *ev = &e->xkey;
 	unsigned int i;
+	#if !KEYCODE_PATCH
 	KeySym keysym;
 
 	keysym = XkbKeycodeToKeysym(dpy, (KeyCode)ev->keycode, 0, 0);
+	#endif // KEYCODE_PATCH
 	for (i = 0; i < LENGTH(keys); i++) {
-		if (keysym == keys[i].keysym &&
+		if (
+			#if KEYCODE_PATCH
+			ev->keycode == keys[i].keycode &&
+			#else
+			keysym == keys[i].keysym &&
+			#endif // KEYCODE_PATCH
 		    CLEANMASK(keys[i].mod) == CLEANMASK(ev->state) &&
 		    keys[i].func)
 			keys[i].func(&(keys[i].arg));
@@ -712,7 +801,9 @@ manage(Window w)
 		int i, j, nextpos;
 		unsigned int modifiers[] = { 0, LockMask, numlockmask,
 		                             numlockmask | LockMask };
+		#if !KEYCODE_PATCH
 		KeyCode code;
+		#endif // KEYCODE_PATCH
 		Client *c;
 		XEvent e;
 
@@ -723,6 +814,13 @@ manage(Window w)
 		XSync(dpy, False);
 
 		for (i = 0; i < LENGTH(keys); i++) {
+			#if KEYCODE_PATCH
+			for (j = 0; j < LENGTH(modifiers); ++j) {
+				XGrabKey(dpy, keys[i].keycode,
+				         keys[i].mod | modifiers[j], w,
+				         True, GrabModeAsync, GrabModeAsync);
+ 			}
+			#else
 			if ((code = XKeysymToKeycode(dpy, keys[i].keysym))) {
 				for (j = 0; j < LENGTH(modifiers); j++) {
 					XGrabKey(dpy, code, keys[i].mod |
@@ -730,6 +828,7 @@ manage(Window w)
 					         GrabModeAsync, GrabModeAsync);
 				}
 			}
+			#endif // KEYCODE_PATCH
 		}
 
 		c = ecalloc(1, sizeof *c);
@@ -890,7 +989,11 @@ resize(int c, int w, int h)
 	XWindowChanges wc;
 
 	ce.x = 0;
+	#if BOTTOM_TABS_PATCH
+	ce.y = wc.y = 0;
+	#else
 	ce.y = wc.y = bh;
+	#endif // BOTTOM_TABS_PATCH
 	ce.width = wc.width = w;
 	ce.height = wc.height = h;
 	ce.type = ConfigureNotify;
@@ -920,10 +1023,15 @@ rotate(const Arg *arg)
 	} else if (sel > -1) {
 		/* Rotating in an arg->i step around the clients. */
 		nsel = sel + arg->i;
-		while (nsel >= nclients)
-			nsel -= nclients;
-		while (nsel < 0)
-			nsel += nclients;
+        if (tabcycle) {
+            while (nsel >= nclients)
+            	nsel -= nclients;
+            while (nsel < 0)
+            	nsel += nclients;
+        } else {
+            if (nsel >= nclients) nsel = nclients - 1;
+            if (nsel < 0) nsel = 0;
+        }
 		focus(nsel);
 	}
 }
@@ -981,26 +1089,29 @@ setcmd(int argc, char *argv[], int replace)
 void
 setup(void)
 {
-	int bitm, tx, ty, tw, th, dh, dw, isfixed;
+	int bitm, tx, ty, tw, th, dh, dw;
 	XWMHints *wmh;
 	XClassHint class_hint;
 	XSizeHints *size_hint;
-	struct sigaction sa;
+	XTextProperty xtp;
 
-	/* do not transform children into zombies when they terminate */
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
-	sa.sa_handler = SIG_IGN;
-	sigaction(SIGCHLD, &sa, NULL);
-
-	/* clean up any zombies that might have been inherited */
-	while (waitpid(-1, NULL, WNOHANG) > 0);
+	/* clean up any zombies immediately */
+	sigchld(0);
 
 	/* init screen */
 	screen = DefaultScreen(dpy);
 	root = RootWindow(dpy, screen);
 	initfont(font);
-	vbh = dc.h = dc.font.height + 2;
+	#if BAR_HEIGHT_PATCH
+	dc.h = (barheight ? barheight : dc.font.height + 2);
+	#else
+	dc.h = dc.font.height + 2;
+	#endif // BAR_HEIGHT_PATCH
+	#if AUTOHIDE_PATCH
+	vbh = dc.h;
+	#else
+	bh = dc.h;
+	#endif // AUTOHIDE_PATCH
 
 	/* init atoms */
 	wmatom[WMDelete] = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
@@ -1017,7 +1128,6 @@ setup(void)
 	wy = 0;
 	ww = 800;
 	wh = 600;
-	isfixed = 0;
 
 	if (geometry) {
 		tx = ty = tw = th = 0;
@@ -1035,8 +1145,6 @@ setup(void)
 			wx = -1;
 		if (bitm & YNegative && wy == 0)
 			wy = -1;
-		if (bitm & (HeightValue | WidthValue))
-			isfixed = 1;
 
 		dw = DisplayWidth(dpy, screen);
 		dh = DisplayHeight(dpy, screen);
@@ -1046,18 +1154,68 @@ setup(void)
 			wy = dh + wy - wh - 1;
 	}
 
+	#if ALPHA_PATCH
+	XVisualInfo *vis;
+	XRenderPictFormat *fmt;
+	int nvi;
+	int i;
+
+	XVisualInfo tpl = {
+		.screen = screen,
+		.depth = 32,
+		.class = TrueColor
+	};
+
+	vis = XGetVisualInfo(dpy, VisualScreenMask | VisualDepthMask | VisualClassMask, &tpl, &nvi);
+	for(i = 0; i < nvi; i ++) {
+		fmt = XRenderFindVisualFormat(dpy, vis[i].visual);
+		if (fmt->type == PictTypeDirect && fmt->direct.alphaMask) {
+			visual = vis[i].visual;
+			break;
+		}
+	}
+
+	XFree(vis);
+
+	if (! visual) {
+		fprintf(stderr, "Couldn't find ARGB visual.\n");
+		exit(1);
+	}
+
+	cmap = XCreateColormap( dpy, root, visual, None);
+	#endif // ALPHA_PATCH
+
 	dc.norm[ColBG] = getcolor(normbgcolor);
 	dc.norm[ColFG] = getcolor(normfgcolor);
 	dc.sel[ColBG] = getcolor(selbgcolor);
 	dc.sel[ColFG] = getcolor(selfgcolor);
 	dc.urg[ColBG] = getcolor(urgbgcolor);
 	dc.urg[ColFG] = getcolor(urgfgcolor);
+	#if ALPHA_PATCH
+	XSetWindowAttributes attrs;
+	attrs.background_pixel = dc.norm[ColBG].pixel;
+	attrs.border_pixel = dc.norm[ColFG].pixel;
+	attrs.bit_gravity = NorthWestGravity;
+	attrs.event_mask = FocusChangeMask | KeyPressMask
+		| ExposureMask | VisibilityChangeMask | StructureNotifyMask
+		| ButtonMotionMask | ButtonPressMask | ButtonReleaseMask;
+	attrs.background_pixmap = None;
+	attrs.colormap = cmap;
+
+	win = XCreateWindow(dpy, root, wx, wy, ww, wh, 0, 32, InputOutput,
+		visual, CWBackPixmap | CWBorderPixel | CWBitGravity
+		| CWEventMask | CWColormap, &attrs);
+
+	dc.drawable = XCreatePixmap(dpy, win, ww, wh, 32);
+	dc.gc = XCreateGC(dpy, dc.drawable, 0, 0);
+	#else
 	dc.drawable = XCreatePixmap(dpy, root, ww, wh,
 	                            DefaultDepth(dpy, screen));
 	dc.gc = XCreateGC(dpy, root, 0, 0);
 
 	win = XCreateSimpleWindow(dpy, root, wx, wy, ww, wh, 0,
 	                          dc.norm[ColFG].pixel, dc.norm[ColBG].pixel);
+	#endif // ALPHA_PATCH
 	XMapRaised(dpy, win);
 	XSelectInput(dpy, win, SubstructureNotifyMask | FocusChangeMask |
 	             ButtonPressMask | ExposureMask | KeyPressMask |
@@ -1065,21 +1223,25 @@ setup(void)
 	             SubstructureRedirectMask);
 	xerrorxlib = XSetErrorHandler(xerror);
 
+
+
 	class_hint.res_name = wmname;
-	class_hint.res_class = "tabbed";
+	class_hint.res_class = wmclass;
 	XSetClassHint(dpy, win, &class_hint);
 
-	size_hint = XAllocSizeHints();
-	if (!isfixed) {
-		size_hint->flags = PSize | PMinSize;
-		size_hint->height = wh;
-		size_hint->width = ww;
-		size_hint->min_height = bh + 1;
-	} else {
-		size_hint->flags = PMaxSize | PMinSize;
-		size_hint->min_width = size_hint->max_width = ww;
-		size_hint->min_height = size_hint->max_height = wh;
+	if (XmbTextListToTextProperty(dpy, (char **)&wmname, 1,
+	    XCompoundTextStyle, &xtp) == Success) {
+		XSetTextProperty(dpy, win, &xtp, wmatom[WMName]);
+		XSetTextProperty(dpy, win, &xtp, XA_WM_NAME);
+		XFree(xtp.value);
 	}
+
+	size_hint = XAllocSizeHints();
+    size_hint->flags = PSize | PMinSize;
+    size_hint->height = wh;
+    size_hint->width = ww;
+    size_hint->min_height = bh + 1;
+
 	wmh = XAllocWMHints();
 	XSetWMProperties(dpy, win, NULL, NULL, NULL, 0, size_hint, wmh, NULL);
 	XFree(size_hint);
@@ -1095,21 +1257,22 @@ setup(void)
 }
 
 void
+sigchld(int unused)
+{
+	if (signal(SIGCHLD, sigchld) == SIG_ERR)
+		die("%s: cannot install SIGCHLD handler", argv0);
+
+	while (0 < waitpid(-1, NULL, WNOHANG));
+}
+
+void
 spawn(const Arg *arg)
 {
-	struct sigaction sa;
-
 	if (fork() == 0) {
 		if(dpy)
 			close(ConnectionNumber(dpy));
 
 		setsid();
-
-		sigemptyset(&sa.sa_mask);
-		sa.sa_flags = 0;
-		sa.sa_handler = SIG_DFL;
-		sigaction(SIGCHLD, &sa, NULL);
-
 		if (arg && arg->v) {
 			execvp(((char **)arg->v)[0], (char **)arg->v);
 			fprintf(stderr, "%s: execvp %s", argv0,
@@ -1283,7 +1446,7 @@ xsettitle(Window w, const char *str)
 void
 usage(void)
 {
-	die("usage: %s [-dfksv] [-g geometry] [-n name] [-p [s+/-]pos]\n"
+	die("usage: %s [-dfksv] [-g geometry] [-n name] [-C class] [-p [s+/-]pos]\n"
 	    "       [-r narg] [-o color] [-O color] [-t color] [-T color]\n"
 	    "       [-u color] [-U color] command...\n", argv0);
 }
@@ -1299,6 +1462,9 @@ main(int argc, char *argv[])
 	case 'c':
 		closelastclient = True;
 		fillagain = False;
+		break;
+	case 'C':
+		wmclass = EARGF(usage());
 		break;
 	case 'd':
 		detach = True;
@@ -1369,6 +1535,9 @@ main(int argc, char *argv[])
 	if (!(dpy = XOpenDisplay(NULL)))
 		die("%s: cannot open display\n", argv0);
 
+	#if XRESOURCES_PATCH
+	config_init();
+	#endif // XRESOURCES_PATCH
 	setup();
 	printf("0x%lx\n", win);
 	fflush(NULL);
