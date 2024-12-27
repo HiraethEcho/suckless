@@ -80,7 +80,7 @@
  * This patch depends on the grid patch.
  * https://tools.suckless.org/dmenu/patches/gridnav/
  */
-#define GRIDNAV_PATCH 0
+#define GRIDNAV_PATCH 1
 
 /* This patch highlights the individual characters of matched text for each dmenu list entry.
  * If combined with the fuzzymatch patch then fuzzy highlight will be used for highlighting
