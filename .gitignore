@@ -3,7 +3,8 @@ tabbed_y/tabbed
 slock/slock
 st/st
 dmenu/dmenu
-xembed
+dmenu/stest
+*/xembed
 surf/surf
 *.rej
 *.orig
@@ -13,3 +14,7 @@ dmenu/stest
 dmenu-flexipatch/stest
 dmenu-flexipatch/dmenu
 dwm/dwm
+dwl/dwl
+*-protocol.c
+*-protocol.h
+.ccls-cache
