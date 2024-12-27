@@ -144,12 +144,12 @@
 /* This patch adds basic mouse support for dmenu.
  * https://tools.suckless.org/dmenu/patches/mouse-support/
  */
-#define MOUSE_SUPPORT_PATCH 0
+#define MOUSE_SUPPORT_PATCH 1
 
 /* Expands the above to support mouse hovering.
  * https://tools.suckless.org/dmenu/patches/mouse-support/
  */
-#define MOTION_SUPPORT_PATCH 0
+#define MOTION_SUPPORT_PATCH 1
 
 /* Without this patch when you press Ctrl+Enter dmenu just outputs current item and it is not
  * possible to undo that.
@@ -171,7 +171,7 @@
  *
  * https://tools.suckless.org/dmenu/patches/navhistory/
  */
-#define NAVHISTORY_PATCH 0
+#define NAVHISTORY_PATCH 1
 
 /* This patch adds back in the workaround for a BadLength error in the Xft library when color
  * glyphs are used. This is for systems that do not have an updated version of the Xft library
