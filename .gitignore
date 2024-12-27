@@ -9,3 +9,4 @@ surf/surf
 *.orig
 *.o
 *.1
+dmenu/stest
