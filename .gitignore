@@ -4,7 +4,8 @@ slock/slock
 st/st
 st-flexipatch/st
 dmenu/dmenu
-xembed
+dmenu/stest
+*/xembed
 surf/surf
 *.rej
 *.orig
@@ -15,3 +16,7 @@ dmenu-flexipatch/stest
 dmenu-flexipatch/dmenu
 dwm/dwm
 dwmblocks/dwmblocks
+dwl/dwl
+*-protocol.c
+*-protocol.h
+.ccls-cache
