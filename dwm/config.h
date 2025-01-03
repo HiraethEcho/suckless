@@ -202,11 +202,11 @@ static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "150x40
 static const Key keys[] = {
     // spawn and kill client
     {Mod4Mask,           XK_grave,  togglescratch, {.v = scratchpadcmd}},
-    // {Mod4Mask|ShiftMask, XK_grave,  sendtoscratch, {0}},
     {MODKEY,             XK_p,      spawn,         {.v = dmenucmd}},
     {MODKEY,             XK_Return, spawn,         {.v = termcmd}},
-    {Mod4Mask,           XK_c,      killclient,    {0}},
     {MODKEY,             XK_Escape, killclient,    {0}},
+    // {Mod4Mask,           XK_c,      killclient,    {0}},
+    // {Mod4Mask|ShiftMask, XK_grave,  sendtoscratch, {0}},
 
     // focus and hide clients
     {MODKEY,           XK_j,   focusstackvis, {.i = +1}},
@@ -233,15 +233,6 @@ static const Key keys[] = {
     {Mod4Mask,           XK_j,      movestack,            {.i = +1}},
     {Mod4Mask,           XK_k,      movestack,            {.i = -1}},
     {Mod4Mask,           XK_Return, movecenter,                 {0}},
-    // opacity
-    // {MODKEY | ShiftMask, XK_a,      changefocusopacity,   {.f = +0.025}},
-    // {MODKEY | ShiftMask, XK_s,      changefocusopacity,   {.f = -0.025}},
-    // {MODKEY | ShiftMask, XK_z,      changeunfocusopacity, {.f = +0.025}},
-    // {MODKEY | ShiftMask, XK_x,      changeunfocusopacity, {.f = -0.025}},
-    {MODKEY, XK_z,      changefocusopacity,   {.f = +0.025}},
-    {MODKEY, XK_x,      changefocusopacity,   {.f = -0.025}},
-    {MODKEY, XK_c,      changeunfocusopacity, {.f = +0.025}},
-    {MODKEY, XK_v,      changeunfocusopacity, {.f = -0.025}},
     // move and resize float clients
     { MODKEY,            XK_Down,   moveresize,           {.v = "0x 25y 0w 0h" } },
     { MODKEY,            XK_Up,     moveresize,           {.v = "0x -25y 0w 0h" } },
@@ -255,6 +246,15 @@ static const Key keys[] = {
     // { Mod4Mask,          XK_Down,   moveresizeedge,       {.v = "b"} },
     // { Mod4Mask,          XK_Left,   moveresizeedge,       {.v = "l"} },
     // { Mod4Mask,          XK_Right,  moveresizeedge,       {.v = "r"} },
+    // opacity
+    // {MODKEY | ShiftMask, XK_a,      changefocusopacity,   {.f = +0.025}},
+    // {MODKEY | ShiftMask, XK_s,      changefocusopacity,   {.f = -0.025}},
+    // {MODKEY | ShiftMask, XK_z,      changeunfocusopacity, {.f = +0.025}},
+    // {MODKEY | ShiftMask, XK_x,      changeunfocusopacity, {.f = -0.025}},
+    {MODKEY, XK_z,      changefocusopacity,   {.f = +0.025}},
+    {MODKEY, XK_x,      changefocusopacity,   {.f = -0.025}},
+    {MODKEY, XK_c,      changeunfocusopacity, {.f = +0.025}},
+    {MODKEY, XK_v,      changeunfocusopacity, {.f = -0.025}},
 
     // change layouts
     // {MODKEY,           XK_a,     setlayout,      {.v = &layouts[2]}},
@@ -280,10 +280,13 @@ static const Key keys[] = {
     {MODKEY|ShiftMask, XK_h,            setcfact,    {.f = -0.02}},
     {MODKEY,           XK_l,            setmfact,    {.f = +0.02}},
     {MODKEY,           XK_h,            setmfact,    {.f = -0.02}},
+    {MODKEY,           XK_bracketleft,  incnmaster,  {.i = +1}},
+    {MODKEY,           XK_bracketright, incnmaster,  {.i = -1}},
 
     {Mod4Mask,         XK_d,            setcfact,    {.f = 0.00}},
     {Mod4Mask,         XK_d,            view,        {0}},
 
+    // gaps
     // {MODKEY,           XK_backslash,    incrgaps,    {.i = +1}},
     // {MODKEY|ShiftMask, XK_backslash,    incrgaps,    {.i = -1}},
     // {MODKEY,           XK_i,            incrigaps,   {.i = +1}},
@@ -294,8 +297,6 @@ static const Key keys[] = {
     {MODKEY,           XK_o,            incrgaps,   {.i = -1}},
     {Mod4Mask,         XK_d,            defaultgaps, {0}},
 
-    {MODKEY,           XK_bracketleft,  incnmaster,  {.i = +1}},
-    {MODKEY,           XK_bracketright, incnmaster,  {.i = -1}},
 
     // bars
     {MODKEY,             XK_b, togglebar,      {0}},
@@ -321,8 +322,8 @@ static const Key keys[] = {
     TAGKEYS(XK_4, 3) 
     TAGKEYS(XK_5, 4)
 
-    {MODKEY|ShiftMask, XK_0, tag,  {.ui = ~0}},
-    {MODKEY,           XK_0, view, {.ui = ~0}},
+    // {MODKEY|ShiftMask, XK_0, tag,  {.ui = ~0}},
+    // {MODKEY,           XK_0, view, {.ui = ~0}},
     {MODKEY|ShiftMask, XK_grave, tag,  {.ui = ~0}},
     {MODKEY,           XK_grave, view, {.ui = ~0}},
 
@@ -364,17 +365,17 @@ static const Key keys[] = {
  * ClkClientWin, or ClkRootWin */
 static const Button buttons[] = {
     /* click,     event mask, button,  function argument,  */
-    {ClkLtSymbol,   0,                Button1, cyclelayout,        {.i = -1}},
-    {ClkLtSymbol,   0,                Button2, setlayout,          {.v = &layouts[2]}},
-    {ClkLtSymbol,   0,                Button3, cyclelayout,        {.i = +1}},
-    {ClkLtSymbol,   0,                Button4, setlayout,          {.v = &layouts[4]}},
-    {ClkLtSymbol,   0,                Button5, setlayout,          {.v = &layouts[5]}},
+    {ClkLtSymbol, 0,      Button1, cyclelayout, {.i = -1}},
+    {ClkLtSymbol, 0,      Button2, setlayout,   {.v = &layouts[2]}},
+    {ClkLtSymbol, 0,      Button3, cyclelayout, {.i = +1}},
+    {ClkLtSymbol, 0,      Button4, setlayout,   {.v = &layouts[4]}},
+    {ClkLtSymbol, 0,      Button5, setlayout,   {.v = &layouts[5]}},
 
-    {ClkTagBar,     0,                Button1, view,               {0}},
-    {ClkTagBar,     0,                Button3, toggleview,         {0}},
-    {ClkTagBar,     MODKEY,           Button1, tag,                {0}},
-    {ClkTagBar,     MODKEY,           Button3, toggletag,          {0}},
-    {ClkTagBar,     0,                Button2, toggletag,          {0}},
+    {ClkTagBar, 0,      Button1, view,       {0}},
+    {ClkTagBar, MODKEY, Button1, toggleview, {0}},
+    {ClkTagBar, 0,      Button3, tag,        {0}},
+    {ClkTagBar, MODKEY, Button3, toggletag,  {0}},
+    {ClkTagBar, 0,      Button2, toggletag,  {0}},
 
     {ClkTab, 0,      Button1, togglewin,            {0}},
     {ClkTab, 0,      Button2, killclient,           {0}},
