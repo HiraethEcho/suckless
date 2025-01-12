@@ -10,7 +10,6 @@ surf/surf
 *.rej
 *.orig
 *.o
-*.1
 dmenu/stest
 dmenu-flexipatch/stest
 dmenu-flexipatch/dmenu
