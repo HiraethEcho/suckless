@@ -19,3 +19,6 @@ dwl/dwl
 *-protocol.c
 *-protocol.h
 .ccls-cache
+*.swn
+*.swo
+*.swp
