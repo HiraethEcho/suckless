@@ -138,9 +138,16 @@ static const unsigned int ulinevoffset = 2; /* how far above the bottom of the b
  */
 
 static const Rule rules[] = {
-    /* class, instance, title,        tags mask, isfloating, focusopacity, unfocusopacity,  monitor */
-    {"st",    NULL,     "scratchpad", 0,         1,          0.8,          0.7,             -1},
-    {"st",    NULL,     "tasks",      0,         1,          0.8,          0.7,             -1},
+    /* class,  instance, title,        tags mask, isfloating, focusopacity, unfocusopacity,  monitor */
+    {"st",     NULL,     "scratchpad", 0,         1,          0.8,          0.7,             -1},
+    {"st",     NULL,     "tasks",      0,         1,          0.8,          0.7,             -1},
+    {"wechat", NULL,     NULL,         1 << 3,    1,          1.0,          inactiveopacity, -1},
+    {"qq", NULL,     NULL,         1 << 3,    1,          1.0,          inactiveopacity, -1},
+    {NULL, NULL,     "QQ",         1 << 3,    1,          1.0,          inactiveopacity, -1},
+    {"Zotero", NULL,     NULL,         1 << 1,    0,          1.0,          inactiveopacity, -1},
+    {"steam", NULL,     NULL,         1 << 3,    0,          1.0,          inactiveopacity, -1},
+    // {"dotnet", NULL,     NULL,         1 << 4,    0,          1.0,          inactiveopacity, -1},
+    // {NULL, NULL,     "Watt Toolkit",         1 << 4,    0,          1.0,          inactiveopacity, -1},
     // {"Gimp",  NULL,     NULL,         0,         1,          1.0,          inactiveopacity, -1},
 };
 
