@@ -19,7 +19,7 @@
 /* This patch hides the tab bar if only one tab is open.
  * https://tools.suckless.org/tabbed/patches/autohide/
  */
-#define AUTOHIDE_PATCH 0
+#define AUTOHIDE_PATCH 1
 
 /* Named after the window title bar patch for dwm this patch divides the
  * tab bar space evenly between the tabbed windows.
@@ -45,7 +45,7 @@
  * https://www.reddit.com/r/suckless/comments/oi4zjl/tabbed_text_alignment/
  * https://github.com/bakkeby/patches/blob/master/tabbed/tabbed-center-0.6-20200512-dabf6a2.diff
  */
-#define CENTER_PATCH 0
+#define CENTER_PATCH 1
 
 /* This patch prints the position number of the client before the window title.
  * https://tools.suckless.org/tabbed/patches/clientnumber/
