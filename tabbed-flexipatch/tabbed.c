@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <X11/Xatom.h>
+#include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xproto.h>
 #include <X11/Xutil.h>
@@ -57,6 +58,9 @@ enum {
 	WMFullscreen,
 	XEmbed,
 	WMSelectTab,
+	#if ICON_PATCH
+	WMIcon,
+	#endif // ICON_PATCH
 	WMLast
 }; /* default atoms */
 
@@ -93,6 +97,9 @@ typedef struct {
 
 typedef struct {
 	char name[256];
+	#if BASENAME_PATCH
+	char *basename;
+	#endif // BASENAME_PATCH
 	Window win;
 	int tabx;
 	Bool urgent;
@@ -138,7 +145,6 @@ static void run(void);
 static void sendxembed(int c, long msg, long detail, long d1, long d2);
 static void setcmd(int argc, char *argv[], int);
 static void setup(void);
-static void sigchld(int unused);
 static void spawn(const Arg *arg);
 static int textnw(const char *text, unsigned int len);
 static void toggle(const Arg *arg);
@@ -164,13 +170,19 @@ static void (*handler[LASTEvent]) (const XEvent *) = {
 	[Expose] = expose,
 	[FocusIn] = focusin,
 	[KeyPress] = keypress,
+	#if KEYRELEASE_PATCH
+	[KeyRelease] = keyrelease,
+	#endif // KEYRELEASE_PATCH
 	[MapRequest] = maprequest,
 	[PropertyNotify] = propertynotify,
+	#if DRAG_PATCH
+	[MotionNotify] = motionnotify,
+	#endif // DRAG_PATCH
 };
 static int bh, obh, wx, wy, ww, wh;
-#if AUTOHIDE_PATCH
+#if AUTOHIDE_PATCH || HIDETABS_PATCH
 static int vbh;
-#endif // AUTOHIDE_PATCH
+#endif // AUTOHIDE_PATCH | HIDETABS_PATCH
 static unsigned int numlockmask;
 static Bool running = True, nextfocus, doinitspawn = True,
             fillagain = False, closelastclient = False,
@@ -186,8 +198,10 @@ static int cmd_append_pos;
 static char winid[64];
 static char **cmd;
 static char *wmname = "tabbed";
-static char *wmclass = "tabbed";
 static const char *geometry;
+#if HIDETABS_PATCH
+static Bool barvisibility = False;
+#endif // HIDETABS_PATCH
 
 #if ALPHA_PATCH
 static Colormap cmap;
@@ -360,9 +374,9 @@ drawbar(void)
 {
 	XftColor *col;
 	int c, cc, fc, width;
-	#if AUTOHIDE_PATCH
+	#if AUTOHIDE_PATCH || HIDETABS_PATCH
 	int nbh;
-	#endif // AUTOHIDE_PATCH
+	#endif // AUTOHIDE_PATCH | HIDETABS_PATCH
 	char *name = NULL;
 	#if CLIENTNUMBER_PATCH
 	char tabtitle[312];
@@ -373,8 +387,19 @@ drawbar(void)
 	int by = 0;
 	#endif // BOTTOM_TABS_PATCH
 
-	#if AUTOHIDE_PATCH
+	#if XRESOURCES_PATCH && XRESOURCES_RELOAD_PATCH
+	if (colors_changed)
+		writecolors();
+	#endif // XRESOURCES_RELOAD_PATCH
+
+	#if AUTOHIDE_PATCH || HIDETABS_PATCH
+	#if AUTOHIDE_PATCH && HIDETABS_PATCH
+	nbh = barvisibility && nclients > 1 ? vbh : 0;
+	#elif HIDETABS_PATCH
+	nbh = barvisibility ? vbh : 0;
+	#elif AUTOHIDE_PATCH
 	nbh = nclients > 1 ? vbh : 0;
+	#endif
 	if (nbh != bh) {
 		bh = nbh;
 		#if BOTTOM_TABS_PATCH
@@ -387,7 +412,7 @@ drawbar(void)
 			XMoveResizeWindow(dpy, clients[c]->win, 0, bh, ww, wh - bh);
 			#endif // BOTTOM_TABS_PATCH
 	}
-	#endif // AUTOHIDE_PATCH
+	#endif // AUTOHIDE_PATCH | HIDETABS_PATCH
 
 	if (nclients == 0) {
 		dc.x = 0;
@@ -404,10 +429,10 @@ drawbar(void)
 		return;
 	}
 
-	#if AUTOHIDE_PATCH
+	#if AUTOHIDE_PATCH || HIDETABS_PATCH
 	if (bh == 0)
 		return;
-	#endif // AUTOHIDE_PATCH
+	#endif // AUTOHIDE_PATCH | HIDETABS_PATCH
 
 	width = ww;
 
@@ -442,10 +467,16 @@ drawbar(void)
 		} else {
 			col = clients[c]->urgent ? dc.urg : dc.norm;
 		}
-		#if CLIENTNUMBER_PATCH
+		#if CLIENTNUMBER_PATCH && BASENAME_PATCH
+		snprintf(tabtitle, sizeof(tabtitle), "%d: %s",
+		         c + 1, basenametitles ? clients[c]->basename : clients[c]->name);
+		drawtext(tabtitle, col);
+		#elif CLIENTNUMBER_PATCH
 		snprintf(tabtitle, sizeof(tabtitle), "%d: %s",
 		         c + 1, clients[c]->name);
 		drawtext(tabtitle, col);
+		#elif BASENAME_PATCH
+		drawtext(basenametitles ? clients[c]->basename : clients[c]->name, col);
 		#else
 		drawtext(clients[c]->name, col);
 		#endif // CLIENTNUMBER_PATCH
@@ -462,10 +493,23 @@ drawtext(const char *text, XftColor col[ColLast])
 	int i, j, x, y, h, len, olen;
 	char buf[256];
 	XftDraw *d;
-	XRectangle r = { dc.x, dc.y, dc.w, dc.h };
+	#if SEPARATOR_PATCH
+	XRectangle tab = { dc.x+separator, dc.y, dc.w-separator, dc.h };
+	XRectangle sep = { dc.x, dc.y, separator, dc.h };
+
+	if (separator) {
+		XSetForeground(dpy, dc.gc, col[ColFG].pixel);
+		XFillRectangles(dpy, dc.drawable, dc.gc, &sep, 1);
+	}
 
 	XSetForeground(dpy, dc.gc, col[ColBG].pixel);
+	XFillRectangles(dpy, dc.drawable, dc.gc, &tab, 1);
+	#else
+	XRectangle r = { dc.x, dc.y, dc.w, dc.h };
+	XSetForeground(dpy, dc.gc, col[ColBG].pixel);
 	XFillRectangles(dpy, dc.drawable, dc.gc, &r, 1);
+	#endif // SEPARATOR_PATCH
+
 	if (!text)
 		return;
 
@@ -534,6 +578,7 @@ focus(int c)
 	char buf[BUFSIZ] = "tabbed-"VERSION" ::";
 	size_t i, n;
 	XWMHints* wmh;
+	XWMHints* win_wmh;
 
 	/* If c, sel and clients are -1, raise tabbed-win itself */
 	if (nclients == 0) {
@@ -542,6 +587,10 @@ focus(int c)
 			n += snprintf(&buf[n], sizeof(buf) - n, " %s", cmd[i]);
 
 		xsettitle(win, buf);
+		#if ICON_PATCH
+		XChangeProperty(dpy, win, wmatom[WMIcon], XA_CARDINAL, 32,
+				PropModeReplace, (unsigned char *) icon, ICON_WIDTH * ICON_HEIGHT + 2);
+		#endif // ICON_PATCH
 		XRaiseWindow(dpy, win);
 
 		return;
@@ -561,12 +610,26 @@ focus(int c)
 		lastsel = sel;
 		sel = c;
 	}
+	#if ICON_PATCH
+	xseticon();
+	#endif // ICON_PATCH
 
 	if (clients[c]->urgent && (wmh = XGetWMHints(dpy, clients[c]->win))) {
 		wmh->flags &= ~XUrgencyHint;
 		XSetWMHints(dpy, clients[c]->win, wmh);
 		clients[c]->urgent = False;
 		XFree(wmh);
+
+		/*
+		 * gnome-shell will not stop notifying us about urgency,
+		 * if we clear only the client hint and don't clear the
+		 * hint from the main container window
+		 */
+		if ((win_wmh = XGetWMHints(dpy, win))) {
+			win_wmh->flags &= ~XUrgencyHint;
+			XSetWMHints(dpy, win, win_wmh);
+			XFree(win_wmh);
+		}
 	}
 
 	drawbar();
@@ -831,6 +894,18 @@ manage(Window w)
 			#endif // KEYCODE_PATCH
 		}
 
+		#if KEYRELEASE_PATCH
+		for (i = 0; i < LENGTH(keyreleases); i++) {
+			if ((code = XKeysymToKeycode(dpy, keyreleases[i].keysym))) {
+				for (j = 0; j < LENGTH(modifiers); j++) {
+					XGrabKey(dpy, code, keyreleases[i].mod |
+					         modifiers[j], w, True,
+					         GrabModeAsync, GrabModeAsync);
+				}
+			}
+		}
+		#endif // KEYRELEASE_PATCH
+
 		c = ecalloc(1, sizeof *c);
 		c->win = w;
 
@@ -976,9 +1051,17 @@ propertynotify(const XEvent *e)
 			}
 		}
 		XFree(wmh);
+		#if ICON_PATCH
+		if (c == sel)
+			xseticon();
+		#endif // ICON_PATCH
 	} else if (ev->state != PropertyDelete && ev->atom == XA_WM_NAME &&
 	           (c = getclient(ev->window)) > -1) {
 		updatetitle(c);
+	#if ICON_PATCH
+	} else if (ev->atom == wmatom[WMIcon] && (c = getclient(ev->window)) > -1 && c == sel) {
+		xseticon();
+	#endif // ICON_PATCH
 	}
 }
 
@@ -1023,15 +1106,10 @@ rotate(const Arg *arg)
 	} else if (sel > -1) {
 		/* Rotating in an arg->i step around the clients. */
 		nsel = sel + arg->i;
-        if (tabcycle) {
-            while (nsel >= nclients)
-            	nsel -= nclients;
-            while (nsel < 0)
-            	nsel += nclients;
-        } else {
-            if (nsel >= nclients) nsel = nclients - 1;
-            if (nsel < 0) nsel = 0;
-        }
+		while (nsel >= nclients)
+			nsel -= nclients;
+		while (nsel < 0)
+			nsel += nclients;
 		focus(nsel);
 	}
 }
@@ -1089,14 +1167,20 @@ setcmd(int argc, char *argv[], int replace)
 void
 setup(void)
 {
-	int bitm, tx, ty, tw, th, dh, dw;
+	int bitm, tx, ty, tw, th, dh, dw, isfixed;
 	XWMHints *wmh;
 	XClassHint class_hint;
 	XSizeHints *size_hint;
-	XTextProperty xtp;
+	struct sigaction sa;
 
-	/* clean up any zombies immediately */
-	sigchld(0);
+	/* do not transform children into zombies when they terminate */
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = SA_NOCLDSTOP | SA_NOCLDWAIT | SA_RESTART;
+	sa.sa_handler = SIG_IGN;
+	sigaction(SIGCHLD, &sa, NULL);
+
+	/* clean up any zombies that might have been inherited */
+	while (waitpid(-1, NULL, WNOHANG) > 0);
 
 	/* init screen */
 	screen = DefaultScreen(dpy);
@@ -1107,11 +1191,11 @@ setup(void)
 	#else
 	dc.h = dc.font.height + 2;
 	#endif // BAR_HEIGHT_PATCH
-	#if AUTOHIDE_PATCH
+	#if AUTOHIDE_PATCH || HIDETABS_PATCH
 	vbh = dc.h;
 	#else
 	bh = dc.h;
-	#endif // AUTOHIDE_PATCH
+	#endif // AUTOHIDE_PATCH | HIDETABS_PATCH
 
 	/* init atoms */
 	wmatom[WMDelete] = XInternAtom(dpy, "WM_DELETE_WINDOW", False);
@@ -1122,12 +1206,16 @@ setup(void)
 	wmatom[WMSelectTab] = XInternAtom(dpy, "_TABBED_SELECT_TAB", False);
 	wmatom[WMState] = XInternAtom(dpy, "_NET_WM_STATE", False);
 	wmatom[XEmbed] = XInternAtom(dpy, "_XEMBED", False);
+	#if ICON_PATCH
+	wmatom[WMIcon] = XInternAtom(dpy, "_NET_WM_ICON", False);
+	#endif // ICON_PATCH
 
 	/* init appearance */
 	wx = 0;
 	wy = 0;
 	ww = 800;
 	wh = 600;
+	isfixed = 0;
 
 	if (geometry) {
 		tx = ty = tw = th = 0;
@@ -1145,6 +1233,8 @@ setup(void)
 			wx = -1;
 		if (bitm & YNegative && wy == 0)
 			wy = -1;
+		if (bitm & (HeightValue | WidthValue))
+			isfixed = 1;
 
 		dw = DisplayWidth(dpy, screen);
 		dh = DisplayHeight(dpy, screen);
@@ -1219,29 +1309,31 @@ setup(void)
 	XMapRaised(dpy, win);
 	XSelectInput(dpy, win, SubstructureNotifyMask | FocusChangeMask |
 	             ButtonPressMask | ExposureMask | KeyPressMask |
+	             #if KEYRELEASE_PATCH
+	             KeyReleaseMask |
+	             #endif // KEYRELEASE_PATCH
 	             PropertyChangeMask | StructureNotifyMask |
+	             #if DRAG_PATCH
+	             ButtonMotionMask |
+	             #endif // DRAG_PATCH
 	             SubstructureRedirectMask);
 	xerrorxlib = XSetErrorHandler(xerror);
 
-
-
 	class_hint.res_name = wmname;
-	class_hint.res_class = wmclass;
+	class_hint.res_class = "tabbed";
 	XSetClassHint(dpy, win, &class_hint);
 
-	if (XmbTextListToTextProperty(dpy, (char **)&wmname, 1,
-	    XCompoundTextStyle, &xtp) == Success) {
-		XSetTextProperty(dpy, win, &xtp, wmatom[WMName]);
-		XSetTextProperty(dpy, win, &xtp, XA_WM_NAME);
-		XFree(xtp.value);
-	}
-
 	size_hint = XAllocSizeHints();
-    size_hint->flags = PSize | PMinSize;
-    size_hint->height = wh;
-    size_hint->width = ww;
-    size_hint->min_height = bh + 1;
-
+	if (!isfixed) {
+		size_hint->flags = PSize | PMinSize;
+		size_hint->height = wh;
+		size_hint->width = ww;
+		size_hint->min_height = bh + 1;
+	} else {
+		size_hint->flags = PMaxSize | PMinSize;
+		size_hint->min_width = size_hint->max_width = ww;
+		size_hint->min_height = size_hint->max_height = wh;
+	}
 	wmh = XAllocWMHints();
 	XSetWMProperties(dpy, win, NULL, NULL, NULL, 0, size_hint, wmh, NULL);
 	XFree(size_hint);
@@ -1252,27 +1344,39 @@ setup(void)
 	snprintf(winid, sizeof(winid), "%lu", win);
 	setenv("XEMBED", winid, 1);
 
+	#if ICON_PATCH
+	/* change icon from RGBA to ARGB */
+	icon[0] = ICON_WIDTH;
+	icon[1] =  ICON_HEIGHT;
+	for (int i = 0; i < ICON_WIDTH * ICON_HEIGHT; ++i) {
+		icon[i + 2] =
+			ICON_PIXEL_DATA[i * 4 + 3] << 24 |
+			ICON_PIXEL_DATA[i * 4 + 0] <<  0 |
+			ICON_PIXEL_DATA[i * 4 + 1] <<  8 |
+			ICON_PIXEL_DATA[i * 4 + 2] << 16 ;
+	}
+	#endif // ICON_PATCH
+
 	nextfocus = foreground;
 	focus(-1);
 }
 
 void
-sigchld(int unused)
-{
-	if (signal(SIGCHLD, sigchld) == SIG_ERR)
-		die("%s: cannot install SIGCHLD handler", argv0);
-
-	while (0 < waitpid(-1, NULL, WNOHANG));
-}
-
-void
 spawn(const Arg *arg)
 {
+	struct sigaction sa;
+
 	if (fork() == 0) {
 		if(dpy)
 			close(ConnectionNumber(dpy));
 
 		setsid();
+
+		sigemptyset(&sa.sa_mask);
+		sa.sa_flags = 0;
+		sa.sa_handler = SIG_DFL;
+		sigaction(SIGCHLD, &sa, NULL);
+
 		if (arg && arg->v) {
 			execvp(((char **)arg->v)[0], (char **)arg->v);
 			fprintf(stderr, "%s: execvp %s", argv0,
@@ -1395,6 +1499,10 @@ updatetitle(int c)
 	    sizeof(clients[c]->name)))
 		gettextprop(clients[c]->win, XA_WM_NAME, clients[c]->name,
 		            sizeof(clients[c]->name));
+	#if BASENAME_PATCH
+	if (basenametitles)
+		clients[c]->basename = getbasename(clients[c]->name);
+	#endif // BASENAME_PATCH
 	if (sel == c)
 		xsettitle(win, clients[c]->name);
 	drawbar();
@@ -1436,7 +1544,7 @@ xsettitle(Window w, const char *str)
 	XTextProperty xtp;
 
 	if (XmbTextListToTextProperty(dpy, (char **)&str, 1,
-	    XCompoundTextStyle, &xtp) == Success) {
+	    XUTF8StringStyle, &xtp) == Success) {
 		XSetTextProperty(dpy, w, &xtp, wmatom[WMName]);
 		XSetTextProperty(dpy, w, &xtp, XA_WM_NAME);
 		XFree(xtp.value);
@@ -1446,7 +1554,11 @@ xsettitle(Window w, const char *str)
 void
 usage(void)
 {
-	die("usage: %s [-dfksv] [-g geometry] [-n name] [-C class] [-p [s+/-]pos]\n"
+	die("usage: %s [-"
+		#if BASENAME_PATCH
+		"b"
+		#endif // BASENAME_PATCH
+		"dfksv] [-g geometry] [-n name] [-p [s+/-]pos]\n"
 	    "       [-r narg] [-o color] [-O color] [-t color] [-T color]\n"
 	    "       [-u color] [-U color] command...\n", argv0);
 }
@@ -1462,9 +1574,6 @@ main(int argc, char *argv[])
 	case 'c':
 		closelastclient = True;
 		fillagain = False;
-		break;
-	case 'C':
-		wmclass = EARGF(usage());
 		break;
 	case 'd':
 		detach = True;
@@ -1514,6 +1623,11 @@ main(int argc, char *argv[])
 	case 'u':
 		urgbgcolor = EARGF(usage());
 		break;
+	#if BASENAME_PATCH
+	case 'b':
+		basenametitles = True;
+		break;
+	#endif // BASENAME_PATCH
 	case 'v':
 		die("tabbed-"VERSION", © 2009-2016 tabbed engineers, "
 		    "see LICENSE for details.\n");
@@ -1537,6 +1651,9 @@ main(int argc, char *argv[])
 
 	#if XRESOURCES_PATCH
 	config_init();
+	#if XRESOURCES_RELOAD_PATCH
+	signal(SIGUSR1, xrdb_reload);
+	#endif // XRESOURCES_RELOAD_PATCH
 	#endif // XRESOURCES_PATCH
 	setup();
 	printf("0x%lx\n", win);
