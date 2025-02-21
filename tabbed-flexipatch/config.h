@@ -1,11 +1,11 @@
 /* See LICENSE file for copyright and license details. */
 
 /* appearance */
-static char *font         = "monospace:size=9";
-static char *normbgcolor  = "#222222";
+static char *font         = "Maple Mono NF:size=9";
+static char *normbgcolor  = "#414868";
 static char *normfgcolor  = "#cccccc";
-static char *selbgcolor   = "#555555";
-static char *selfgcolor   = "#ffffff";
+static char *selbgcolor   = "#81a1c1";
+static char *selfgcolor   = "#2a303c";
 static char *urgbgcolor   = "#111111";
 static char *urgfgcolor   = "#cc0000";
 static char before[]      = "<";
@@ -106,11 +106,10 @@ static const Key keys[] = {
 	{ MODKEY|ShiftMask,     XK_Return,    focusonce,   { 0 } },
 	{ MODKEY|ShiftMask,     XK_Return,    spawn,       { 0 } },
 
-	{ MODKEY|ShiftMask,     XK_l,         rotate,      { .i = +1 } },
-	{ MODKEY|ShiftMask,     XK_h,         rotate,      { .i = -1 } },
-	{ MODKEY|ShiftMask,     XK_j,         movetab,     { .i = -1 } },
-	{ MODKEY|ShiftMask,     XK_k,         movetab,     { .i = +1 } },
-	{ MODKEY,               XK_Tab,       rotate,      { .i = 0 } },
+	{ MODKEY|ShiftMask,     XK_h,         movetab,     { .i = -1 } },
+	{ MODKEY|ShiftMask,     XK_l,         movetab,     { .i = +1 } },
+	{ MODKEY,               XK_Tab,       rotate,      { .i = +1 } },
+	{ MODKEY|ShiftMask,     XK_Tab,       rotate,      { .i = -1 } },
 
 	{ MODKEY,               XK_grave,     spawn,       SETPROP("_TABBED_SELECT_TAB") },
 	{ MODKEY,               XK_1,         move,        { .i = 0 } },
@@ -124,7 +123,7 @@ static const Key keys[] = {
 	{ MODKEY,               XK_9,         move,        { .i = 8 } },
 	{ MODKEY,               XK_0,         move,        { .i = 9 } },
 
-	{ MODKEY,               XK_q,         killclient,  { 0 } },
+	{ MODKEY,               XK_w,         killclient,  { 0 } },
 
 	{ MODKEY,               XK_u,         focusurgent, { 0 } },
 	{ MODKEY|ShiftMask,     XK_u,         toggle,      { .v = (void*) &urgentswitch } },
