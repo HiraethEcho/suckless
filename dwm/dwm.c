@@ -263,6 +263,7 @@ static int applysizehints(Client *c, int *x, int *y, int *w, int *h,
 static void arrange(Monitor *m);
 static void arrangemon(Monitor *m);
 static void attach(Client *c);
+static void attachBelow(Client *c);
 static void attachstack(Client *c);
 
 static void buttonpress(XEvent *e);
@@ -571,6 +572,21 @@ void alttab(const Arg *arg) {
     }
   }
   return;
+}
+void
+attachBelow(Client *c)
+{
+  //If there is nothing on the monitor or the selected client is floating, attach as normal
+  if(c->mon->sel == NULL || c->mon->sel == c || c->mon->sel->isfloating) {
+    attach(c);
+    return;
+  }
+
+  //Set the new client's next property to the same as the currently selected clients next
+  c->next = c->mon->sel->next;
+  //Set the currently selected clients next property to the new client
+  c->mon->sel->next = c;
+
 }
 
 void wintab(const Arg *arg) {
@@ -1760,13 +1776,13 @@ void focus(Client *c) {
     XDeleteProperty(dpy, root, netatom[NetActiveWindow]);
   }
   // selmon->sel = c;
-	if(selmon->sel && selmon->sel->isfullscreen){
-		togglefullscreen();
-		selmon->sel = c;
-		togglefullscreen();
-	}else{
-		selmon->sel = c;
-	}
+  if(selmon->sel && selmon->sel->isfullscreen){
+    togglefullscreen();
+    selmon->sel = c;
+    togglefullscreen();
+  }else{
+    selmon->sel = c;
+  }
   drawbars();
 }
 //
@@ -2115,7 +2131,11 @@ void manage(Window w, XWindowAttributes *wa) {
     c->isfloating = c->oldstate = trans != None || c->isfixed;
   // if (c->isfloating)
   //   XRaiseWindow(dpy, c->win);
-  attach(c);
+  // attach(c);
+  if( attachbelow )
+    attachBelow(c);
+  else
+    attach(c);
   attachstack(c);
   XChangeProperty(dpy, root, netatom[NetClientList], XA_WINDOW, 32,
                   PropModeAppend, (unsigned char *)&(c->win), 1);
@@ -2662,7 +2682,11 @@ void sendmon(Client *c, Monitor *m) {
   // c->tags = (m->tagset[m->seltags] ? m->tagset[m->seltags] : 1);
   c->x = c->mon->wx + (c->mon->ww - WIDTH(c)) / 2;
   c->y = c->mon->wy + (c->mon->wh - HEIGHT(c)) / 2;
-  attach(c);
+  // attach(c);
+  if( attachbelow )
+    attachBelow(c);
+  else
+    attach(c);
   attachstack(c);
   focus(NULL);
   arrange(NULL);
@@ -3113,9 +3137,9 @@ void togglefloating(const Arg *arg) {
 void
 togglefullscreen()
 {
-	if (selmon->sel){
-		setfullscreen(selmon->sel, !selmon->sel->isfullscreen);
-	}
+  if (selmon->sel){
+    setfullscreen(selmon->sel, !selmon->sel->isfullscreen);
+  }
 }
 
 void sendtoscratch(const Arg *arg) {
@@ -3227,7 +3251,7 @@ void unfocus(Client *c, int setfocus) {
 void unmanage(Client *c, int destroyed) {
   Monitor *m = c->mon;
   XWindowChanges wc;
-	int fullscreen = (selmon->sel == c && selmon->sel->isfullscreen)?1:0;
+  int fullscreen = (selmon->sel == c && selmon->sel->isfullscreen)?1:0;
 
   detach(c);
   detachstack(c);
@@ -3247,9 +3271,9 @@ void unmanage(Client *c, int destroyed) {
   //   scratchpad_last_showed = NULL;
   free(c);
   focus(NULL);
-	if(fullscreen){
-		togglefullscreen();
-	}
+  if(fullscreen){
+    togglefullscreen();
+  }
   updateclientlist();
   arrange(m);
 }
@@ -3393,7 +3417,11 @@ int updategeom(void) {
         m->clients = c->next;
         detachstack(c);
         c->mon = mons;
-        attach(c);
+        // attach(c);
+          if( attachbelow )
+            attachBelow(c);
+          else
+            attach(c);
         attachstack(c);
       }
       if (m == selmon)
@@ -3477,7 +3505,7 @@ void updatesizehints(Client *c) {
 }
 
 void updatestatus(void) {
-	Monitor* m;
+  Monitor* m;
   if (!gettextprop(root, XA_WM_NAME, stext, sizeof(stext))) {
     strcpy(stext, "dwm");
     estext[0] = '\0';
@@ -3490,7 +3518,7 @@ void updatestatus(void) {
     } else
       estext[0] = '\0';
   }
-	for(m = mons; m; m = m->next)
+  for(m = mons; m; m = m->next)
     drawbar(m);
   // updatesystray(1);
 }
