@@ -45,8 +45,8 @@ static const double inactiveopacity = 0.75f; /* Window opacity when it's inactiv
 
 static const int focusonwheel = 1;
 
-static const char *fonts[] = {"Maple Mono NF:size=12"};
-static const char dmenufont[] = "Maple Mono NF:size=12";
+static const char *fonts[] = {"CodeNewRoman Nerd Font Mono:size=12"};
+static const char dmenufont[] = "CodeNewRoman Nerd Font Mono:size=12";
 
 
 #define OPAQUE                  0xffU
@@ -449,11 +449,8 @@ static const Button buttons[] = {
     {ClkEtyTab,   0, Button3, spawn, SHCMD("dwmClkEtyTab 3")},
     {ClkEtyTab,   0, Button4, spawn, SHCMD("dwmClkEtyTab 4")},
     {ClkEtyTab,   0, Button5, spawn, SHCMD("dwmClkEtyTab 5")},
-    /* {ClkEtyTitle,   0,                Button1, spawn,              SHCMD("rofi_quickapps")},
     {ClkEtyTitle,   0,                Button2, spawn,              SHCMD("rofi -show run")},
     {ClkEtyTitle,   0,                Button3, spawn,              SHCMD("rofi_allapps")},
-    {ClkEtyTitle,   0,                Button4, spawn,              SHCMD("xbacklight -inc 5; pkill -SIGUSR1 dwmblocks")},
-    {ClkEtyTitle,   0,                Button5, spawn,              SHCMD("xbacklight -dec 5; pkill -SIGUSR1 dwmblocks")},
     {ClkRootWin,    0,                Button1, spawn,              SHCMD("wallpaper_change")},
     {ClkRootWin,    0,                Button2, spawn,              SHCMD("rofi -show run")},
     {ClkRootWin,    0,                Button3, spawn,              SHCMD("rofi_allapps")},
@@ -462,6 +459,4 @@ static const Button buttons[] = {
     {ClkEtyTab,     0,                Button1, spawn,              SHCMD("rofi_quickapps")},
     {ClkEtyTab,     0,                Button2, spawn,              SHCMD("rofi -show run")},
     {ClkEtyTab,     0,                Button3, spawn,              SHCMD("rofi_allapps")},
-    {ClkEtyTab,     0,                Button4, spawn,              SHCMD("xbacklight -inc 5; pkill -SIGUSR1 dwmblocks")},
-    {ClkEtyTab,     0,                Button5, spawn,              SHCMD("xbacklight -dec 5; pkill -SIGUSR1 dwmblocks")}, */
 };
