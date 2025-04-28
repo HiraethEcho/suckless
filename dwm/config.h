@@ -139,13 +139,13 @@ static const unsigned int ulinevoffset = 2; /* how far above the bottom of the b
 
 static const Rule rules[] = {
     /* class,  instance, title,        tags mask, isfloating, focusopacity, unfocusopacity,  monitor */
-    {"scratchpad",     NULL,     NULL, 0,         1,          0.8,          0.7,             -1},
-    {"st",     NULL,     "tasks",      0,         1,          0.8,          0.7,             -1},
-    {"wechat", NULL,     NULL,         1 << 3,    1,          1.0,          inactiveopacity, -1},
-    {"qq", NULL,     NULL,         1 << 3,    1,          1.0,          inactiveopacity, -1},
-    {NULL, NULL,     "QQ",         1 << 3,    1,          1.0,          inactiveopacity, -1},
-    {"Zotero", NULL,     NULL,         1 << 1,    0,          1.0,          inactiveopacity, -1},
-    {"steam", NULL,     NULL,         1 << 3,    0,          1.0,          inactiveopacity, -1},
+    {"scratchpad", NULL, NULL,    0,      1, 0.8, 0.7,             -1},
+    {"st",         NULL, "tasks", 0,      1, 0.8, 0.7,             -1},
+    {"wechat",     NULL, NULL,    1 << 3, 1, 1.0, inactiveopacity, -1},
+    {"qq",         NULL, NULL,    1 << 3, 1, 1.0, inactiveopacity, -1},
+    {NULL,         NULL, "QQ",    1 << 3, 1, 1.0, inactiveopacity, -1},
+    {"Zotero",     NULL, NULL,    1 << 1, 0, 1.0, inactiveopacity, -1},
+    {"steam",      NULL, NULL,    1 << 3, 0, 1.0, inactiveopacity, -1},
     // {"dotnet", NULL,     NULL,         1 << 4,    0,          1.0,          inactiveopacity, -1},
     // {NULL, NULL,     "Watt Toolkit",         1 << 4,    0,          1.0,          inactiveopacity, -1},
     // {"Gimp",  NULL,     NULL,         0,         1,          1.0,          inactiveopacity, -1},
@@ -364,8 +364,8 @@ static const Key keys[] = {
     {0, XF86XK_AudioMute,         spawn, SHCMD("pamixer -t; pkill -SIGUSR1 dwmblocks")},
     {0, XF86XK_MonBrightnessUp,   spawn, SHCMD("xbacklight -inc 5; pkill -SIGUSR1 dwmblocks")},
     {0, XF86XK_MonBrightnessDown, spawn, SHCMD("xbacklight -dec 5; pkill -SIGUSR1 dwmblocks")},
-    {0, XF86XK_WLAN,              spawn, SHCMD("nm-connection-editor")},
-    {0, XF86XK_Tools,             spawn, SHCMD("rofi_allapps")},
+    // {0, XF86XK_WLAN,              spawn, SHCMD("nm-connection-editor")},
+    // {0, XF86XK_Tools,             spawn, SHCMD("rofi_allapps")},
     // {0, XK_F5, spawn, SHCMD("block_update")},
 };
 
@@ -381,10 +381,11 @@ static const Button buttons[] = {
     {ClkLtSymbol, 0,      Button5, setlayout,   {.v = &layouts[5]}},
 
     {ClkTagBar, 0,      Button1, view,       {0}},
-    {ClkTagBar, MODKEY, Button1, toggleview, {0}},
-    {ClkTagBar, 0,      Button3, tag,        {0}},
-    {ClkTagBar, MODKEY, Button3, toggletag,  {0}},
-    {ClkTagBar, 0,      Button2, toggletag,  {0}},
+    {ClkTagBar, 0,      Button2, toggleview, {0}},
+    {ClkTagBar, 0,      Button3, toggletag,  {0}},
+    // {ClkTagBar, MODKEY, Button1, toggleview, {0}},
+    // {ClkTagBar, 0,      Button3, tag,        {0}},
+    // {ClkTagBar, MODKEY, Button3, toggletag,  {0}},
 
     {ClkTab, 0,      Button1, togglewin,            {0}},
     {ClkTab, 0,      Button2, killclient,           {0}},
