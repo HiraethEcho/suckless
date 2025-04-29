@@ -6,6 +6,7 @@
 const Block blocks[] = {
 	BLOCK("block_battery",   60,  1),
 	BLOCK("block_progress",  300, 2),
+	BLOCK("block_resources", 2, 7),
   {"echo ';'" ,0,0},
 	BLOCK("block_wifi",      30,  4),
 	BLOCK("block_pulse",     10,   5),

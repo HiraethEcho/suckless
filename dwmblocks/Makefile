@@ -4,9 +4,14 @@ PREFIX = /usr/local
 CFLAGS = -Ofast
 LDLIBS = -lX11
 
+CFLAGS2 = -03 -Wall -Wextra
+
 BIN = dwmblocks
 
 $(BIN): main.o
+	$(CC) $^ -o $@ $(LDLIBS)
+
+xgetrootname: xgetrootname.c
 	$(CC) $^ -o $@ $(LDLIBS)
 
 clean:
