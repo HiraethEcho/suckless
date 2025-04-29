@@ -9,8 +9,8 @@ const Block blocks[] = {
 	BLOCK("block_light",     0,   6),
 	BLOCK("block_progress",  300, 2),
   {"echo ';'" ,0,0},
-	BLOCK("block_wifi",      30,  4),
 	BLOCK("block_resources", 2, 7),
+	BLOCK("block_wifi",      30,  4),
 };
 
 	// BLOCK("block_time",    60, 3),
