@@ -269,12 +269,12 @@ static const Key keys[] = {
     // {MODKEY,           XK_a,     setlayout,      {.v = &layouts[2]}},
     // {Mod4Mask,           XK_s,     setlayout,      {.v = &layouts[4]}},
     // {MODKEY,           XK_d,     setlayout,      {.v = &layouts[5]}},
-    {MODKEY|ShiftMask, XK_space, togglefloating,   {0}},
-    {Mod4Mask,         XK_f,     setlayout,        {.v = &layouts[0]}},
-    {Mod4Mask,         XK_g,     setlayout,        {.v = &layouts[1]}},
-    {Mod4Mask,         XK_t,     setlayout,        {.v = &layouts[3]}},
-    {Mod4Mask,         XK_b,     setlayout,        {.v = &layouts[5]}},
-    {MODKEY|ShiftMask, XK_f,     togglefullscreen, {0} },
+    {MODKEY|ShiftMask, XK_space, togglefloating,       {0}},
+    {Mod4Mask,         XK_f,     setlayout,            {.v = &layouts[0]}},
+    {Mod4Mask,         XK_g,     setlayout,            {.v = &layouts[1]}},
+    {Mod4Mask,         XK_t,     setlayout,            {.v = &layouts[3]}},
+    {Mod4Mask,         XK_b,     setlayout,            {.v = &layouts[5]}},
+    {MODKEY|ShiftMask, XK_f,     togglefakefullscreen, {0} },
 
     // {MODKEY|ShiftMask,  XK_f,     raisewin,       {0}},
     // { MODKEY|ShiftMask,          XK_comma,  cyclelayout,    {.i =
