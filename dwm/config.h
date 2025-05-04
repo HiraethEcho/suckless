@@ -13,10 +13,10 @@ static const unsigned int winModKey = 0x85; //win
 static const unsigned int tabCycleKey = 0x17;
 static const unsigned int tabCycleKeyInv = 0x32;
 
-static const unsigned int gappih = 3; /* horiz inner gap between windows */
-static const unsigned int gappiv = 3; /* vert inner gap between windows */
-static const unsigned int gappoh = 3; /* horiz outer gap between windows and screen edge */
-static const unsigned int gappov = 3; /* vert outer gap between windows and screen edge */
+static const unsigned int gappih = 2; /* horiz inner gap between windows */
+static const unsigned int gappiv = 2; /* vert inner gap between windows */
+static const unsigned int gappoh = 2; /* horiz outer gap between windows and screen edge */
+static const unsigned int gappov = 2; /* vert outer gap between windows and screen edge */
 static int smartgaps = 1; /* 1 means no outer gap when there is only one window */
 
 
@@ -30,18 +30,17 @@ static const int showextrabar = 1;                 /* 0 means no extrabar */
 static const int topbar = 1;                  /* 0 means bottom bar */
 
 static const int isfixedtabwidth = 1; 
-static const char *tabWidth = "                   ";
+static const char *tabWidth = "                ";
 
 static const char statussep         = ';';      /* separator between status bars */
-
 
 static const int startontag         = 1;        /* 0 means no tag active on start */
 static const int scalepreview       = 2;        /* preview scaling (display w and h / scalepreview) */
 static const int previewbar         = 1;        /* show the bar in the preview window */
 // ⭘  󰣇 󱓞 󰣇
 
-static const double activeopacity = 0.9f; /* Window opacity when it's focused (0 <= opacity <= 1) */
-static const double inactiveopacity = 0.75f; /* Window opacity when it's inactive (0 <= opacity <= 1) */
+static const double activeopacity = 0.95f; /* Window opacity when it's focused (0 <= opacity <= 1) */
+static const double inactiveopacity = 0.9f; /* Window opacity when it's inactive (0 <= opacity <= 1) */
 
 static const int focusonwheel = 1;
 
@@ -56,7 +55,7 @@ static const unsigned int normalpha = 0.8*0xffU;
 static const unsigned int hidealpha = 0.5*0xffU;
 static const unsigned int etyalpha = 0.1*0xffU;
 static const unsigned int sysalpha = 0.9*0xffU;
-static const unsigned int statusalpha = 0.7*0xffU;
+static const unsigned int statusalpha = 0.8*0xffU;
 
 static const unsigned int symalpha = 0.8*0xffU;
 static const unsigned int tagalpha = 0.9*0xffU;
@@ -84,7 +83,7 @@ static const char *tagy[][2] = {
   {"#bc619a","#ffec2b" },
   {"#ab61aa","#6ce0d6" },
 };
-static const unsigned int tagalphas[][2]      = {
+static const unsigned int tagalphas[][2] = {
   { OPAQUE, tagalpha },
   { OPAQUE, tagalpha },
   { OPAQUE, tagalpha },
@@ -103,7 +102,7 @@ static const char *colors[][3] = {
     [SchemeStatus]   = { "#ffffff", "#49688e", cyan},
     [SchemeSym]      = { "#dfe3ee", "#3b5998", cyan},
     [SchemeTag]      = { "#83848e", "#213438", cyan},
-    [SchemeTitle]    = { "#2a303c", "#ffeaba", "#d8dee9"},
+    [SchemeTitle]    = { "#2a303c", "#9fe29a", "#d8dee9"},
 };
 static const unsigned int alphas[][3]      = {
 	/*               fg      bg        border     */
