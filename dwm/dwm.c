@@ -3237,11 +3237,10 @@ void toggletag(const Arg *arg) {
 }
 
 void toggleview(const Arg *arg) {
-  unsigned int newtagset =
-      selmon->tagset[selmon->seltags] ^ (arg->ui & TAGMASK);
-
+  unsigned int newtagset = selmon->tagset[selmon->seltags] ^ (arg->ui & TAGMASK);
   int i;
 
+ 	if (newtagset) {
   selmon->tagset[selmon->seltags] = newtagset;
   if (newtagset == ~0) {
     selmon->pertag->prevtag = selmon->pertag->curtag;
@@ -3272,7 +3271,7 @@ void toggleview(const Arg *arg) {
     toggleextrabar(NULL);
   focus(NULL);
   arrange(selmon);
-  // }
+  }
 }
 
 void togglewin(const Arg *arg) {
