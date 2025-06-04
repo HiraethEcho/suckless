@@ -686,9 +686,10 @@ void applyrules(Client *c) {
       c->tags |= r->tags;
       c->opacity = r->opacity;
       c->unfocusopacity = r->unfocusopacity;
+/*
       for (m = mons; m && m->num != r->monitor; m = m->next) ;
       if (m)
-        c->mon = m;
+        c->mon = m; */
     }
   }
   if (ch.res_class)
