@@ -2081,6 +2081,8 @@ void manage(Window w, XWindowAttributes *wa) {
   Client *c, *t = NULL;
   Window trans = None;
   XWindowChanges wc;
+  XClassHint ch = {NULL, NULL};
+  const char *class, *instance;
 
   c = ecalloc(1, sizeof(Client));
   c->win = w;
@@ -2110,7 +2112,9 @@ void manage(Window w, XWindowAttributes *wa) {
   c->bw = borderpx;
 
   selmon->tagset[selmon->seltags] &= ~scratchtag;
-  if (!strcmp(c->name, scratchpadname)) {
+  XGetClassHint(dpy, c->win, &ch);
+  class = ch.res_class ? ch.res_class : broken;
+  if (!strcmp(class, scratchpadname)) {
     c->mon->tagset[c->mon->seltags] |= c->tags = scratchtag;
     c->isfloating = True;
   }
