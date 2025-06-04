@@ -3,7 +3,7 @@
 #include <X11/X.h>
 #include <X11/XF86keysym.h>
 /* appearance */
-static const unsigned int borderpx = 2; /* border pixel of windows */
+static const unsigned int borderpx = 1; /* border pixel of windows */
 static const unsigned int snap = 15;    /* snap pixel */
 static const  int ebarpad   = 0;
 static const  int barpad   = 0;
@@ -138,7 +138,9 @@ static const unsigned int ulinevoffset = 2; /* how far above the bottom of the b
 
 static const Rule rules[] = {
     /* class,  instance, title,        tags mask, isfloating, focusopacity, unfocusopacity,  monitor */
-    {"scratchpad", NULL, NULL,    0,      1, 0.8, 0.7,             -1},
+    // {"scratchpad", NULL, NULL,    0,      1, 0.8, 0.7,             -1},
+    // {"tabbed", NULL, NULL,    0,      1, 0.8, 0.7,             -1},
+    // {"tabbed", NULL, "scratchpad",0,      1, 0.8, 0.7,             -1},
     {"st",         NULL, "tasks", 0,      1, 0.8, 0.7,             -1},
     {"wechat",     NULL, NULL,    1 << 3, 1, 1.0, inactiveopacity, -1},
     {"qq",         NULL, NULL,    1 << 3, 1, 1.0, inactiveopacity, -1},
@@ -203,12 +205,13 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = {"dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", gray1, "-nf", cyan, "-sb", cyan, "-sf", gray1, NULL};
 static const char *termcmd[] = {"kitty", NULL};
 
-static const char scratchpadname[] = "scratchpad";
+static const char scratchpadname[] = "tabbed";
 static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "150x40", NULL };
 
 static const Key keys[] = {
     // spawn and kill client
-    {Mod4Mask,           XK_grave,  togglescratch, SHCMD("st -g 150x40 -t scratchpad" )},
+    {Mod4Mask,           XK_grave,  togglescratch, SHCMD("dwmPAD" )},
+    // {Mod4Mask,           XK_grave,  togglescratch, SHCMD("st -g 150x40 -t scratchpad" )},
     {MODKEY,             XK_p,      spawn,         {.v = dmenucmd}},
     {MODKEY,             XK_Return, spawn,         {.v = termcmd}},
     {MODKEY|ShiftMask,   XK_Return, spawn,         SHCMD("tabbed -c -n st -r 2 st -w ''" )},
