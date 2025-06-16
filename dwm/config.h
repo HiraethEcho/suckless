@@ -215,7 +215,7 @@ static const Key keys[] = {
     // {Mod4Mask,           XK_grave,  togglescratch, SHCMD("st -g 150x40 -t scratchpad" )},
     {MODKEY,             XK_p,      spawn,         {.v = dmenucmd}},
     {MODKEY,             XK_Return, spawn,         {.v = termcmd}},
-    {MODKEY|ShiftMask,   XK_Return, spawn,         SHCMD("tabbed -c -n st -r 2 st -w ''" )},
+    {MODKEY|ShiftMask,   XK_Return, spawn,         SHCMD("tabbed -c -k -n st st -w" )},
     {MODKEY,             XK_Escape, killclient,    {0}},
     // {Mod4Mask,           XK_c,      killclient,    {0}},
     // {Mod4Mask|ShiftMask, XK_grave,  sendtoscratch, {0}},
