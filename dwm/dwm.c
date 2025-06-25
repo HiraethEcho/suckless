@@ -2114,8 +2114,8 @@ void manage(Window w, XWindowAttributes *wa) {
 
   selmon->tagset[selmon->seltags] &= ~scratchtag;
   XGetClassHint(dpy, c->win, &ch);
-  class = ch.res_class ? ch.res_class : broken;
-  if (!strcmp(class, scratchpadname)) {
+  instance = ch.res_name ? ch.res_name : broken;
+  if (!strcmp(instance, scratchpadname)) {
     c->mon->tagset[c->mon->seltags] |= c->tags = scratchtag;
     c->isfloating = True;
   }
