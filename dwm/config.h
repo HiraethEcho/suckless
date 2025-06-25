@@ -142,12 +142,14 @@ static const Rule rules[] = {
     // {"tabbed", NULL, NULL,    0,      1, 0.8, 0.7,             -1},
     // {"tabbed", NULL, "scratchpad",0,      1, 0.8, 0.7,             -1},
     // {"st",         NULL, "tasks", 0,      1, 0.8, 0.7,             -1},
-    {"tasks",      NULL, NULL,    0,      1, 0.8, 0.7,             -1},
-    {"wechat",     NULL, NULL,    1 << 3, 1, 1.0, inactiveopacity, -1},
-    {"qq",         NULL, NULL,    1 << 3, 1, 1.0, inactiveopacity, -1},
-    {NULL,         NULL, "QQ",    1 << 3, 1, 1.0, inactiveopacity, -1},
-    {"Zotero",     NULL, NULL,    1 << 1, 0, 1.0, inactiveopacity, -1},
-    {"steam",      NULL, NULL,    1 << 3, 0, 1.0, inactiveopacity, -1},
+    {NULL,      "instance", NULL, 0,      1, 0.8, 0.7,             -1},
+    {"Steam++", "dotnet",   NULL, 1 << 4, 0, 0.8, 0.7,             -1},
+    {"tasks",   NULL,       NULL, 0,      1, 0.8, 0.7,             -1},
+    {"wechat",  NULL,       NULL, 1 << 3, 1, 1.0, inactiveopacity, -1},
+    {"qq",      NULL,       NULL, 1 << 3, 1, 1.0, inactiveopacity, -1},
+    {NULL,      NULL,       "QQ", 1 << 3, 1, 1.0, inactiveopacity, -1},
+    {"Zotero",  NULL,       NULL, 1 << 1, 0, 1.0, inactiveopacity, -1},
+    {"steam",   NULL,       NULL, 1 << 3, 0, 1.0, inactiveopacity, -1},
     // {"dotnet", NULL,     NULL,         1 << 4,    0,          1.0,          inactiveopacity, -1},
     // {NULL, NULL,     "Watt Toolkit",         1 << 4,    0,          1.0,          inactiveopacity, -1},
     // {"Gimp",  NULL,     NULL,         0,         1,          1.0,          inactiveopacity, -1},
@@ -206,7 +208,7 @@ static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() 
 static const char *dmenucmd[] = {"dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", gray1, "-nf", cyan, "-sb", cyan, "-sf", gray1, NULL};
 static const char *termcmd[] = {"kitty", NULL};
 
-static const char scratchpadname[] = "tabbed";
+static const char scratchpadname[] = "scratchpad";
 static const char *scratchpadcmd[] = { "st", "-t", scratchpadname, "-g", "150x40", NULL };
 
 static const Key keys[] = {
