@@ -1,8 +1,8 @@
 # dmenu version
-VERSION = 5.3
+VERSION = 5.4
 
 # paths
-PREFIX = /usr/local
+PREFIX = /usr
 MANPREFIX = $(PREFIX)/share/man
 
 X11INC = /usr/X11R6/include
