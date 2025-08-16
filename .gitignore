@@ -27,3 +27,9 @@ tabbed-flexipath/tabbed
 slock/slock
 st/st
 st-flexipatch/st
+
+
+dvtm/dvtm
+dvtm/dvtm-editor
+dvtm/*.css
+dvtm/*.html

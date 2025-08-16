@@ -1,57 +1,58 @@
-static void
-bstack(void) {
-	unsigned int i, m, n, nx, ny, nw, nh, mh, tw;
+static void bstack(void)
+{
+	unsigned int i, n, nx, ny, nw, nh, m, mw, mh, tw;
 	Client *c;
 
-	for(n = 0, m = 0, c = clients; c; c = c->next, n++)
-		if(c->minimized)
-			m++;
+	for (n = 0, c = nextvisible(clients); c; c = nextvisible(c->next))
+		if (!c->minimized)
+			n++;
 
-	if(n == 1)
-		mh = wah;
-	else if(n - 1 == m)
-		mh = wah - m;
-	else
-		mh = mwfact * (wah - m);
-	/* true if there are at least 2 non minimized clients */
-	if(n - 1 > m)
-		tw = waw / (n - m - 1);
-
+	m  = MAX(1, MIN(n, screen.nmaster));
+	mh = n == m ? wah : screen.mfact * wah;
+	mw = waw / m;
+	tw = n == m ? 0 : waw / (n - m);
 	nx = wax;
 	ny = way;
-	for(i = 0, c = clients; c; c = c->next, i++){
-		if(i == 0){ /* master */
-			nh = mh;
-			nw = waw;
-		} else { /* tile window */
-			if(i == 1){
-				nx = wax;
-				ny += mh;
-				nh = (way + wah - m) - ny;
-			}
-			if(i == n - m - 1){ /* last not minimized client */
-				nw = (wax + waw) - nx;
-			} else if(i == n - m){ /* first minimized client */
-				ny += nh;
-				nx = wax;
-				nw = waw;
-				nh = 1;
-			} else if(c->minimized) { /* minimized window */
-				nw = waw;
-				nh = 1;
-				ny++;
-			} else /* normal non minimized tile window */
-				nw = tw;
-			if(i > 1 && !c->minimized){
+
+	for (i = 0, c = nextvisible(clients); c; c = nextvisible(c->next)) {
+		if (c->minimized)
+			continue;
+		if (i < m) {	/* master */
+			if (i > 0) {
 				mvvline(ny, nx, ACS_VLINE, nh);
 				mvaddch(ny, nx, ACS_TTEE);
-				nx++, nw--;
+				nx++;
 			}
+			nh = mh;
+			nw = (i < m - 1) ? mw : (wax + waw) - nx;
+		} else {	/* tile window */
+			if (i == m) {
+				nx = wax;
+				ny += mh;
+				nh = (way + wah) - ny;
+			}
+			if (i > m) {
+				mvvline(ny, nx, ACS_VLINE, nh);
+				mvaddch(ny, nx, ACS_TTEE);
+				nx++;
+			}
+			nw = (i < n - 1) ? tw : (wax + waw) - nx;
 		}
+		resize(c, nx, ny, nw, nh);
+		nx += nw;
+		i++;
+	}
 
-		resize(c,nx,ny,nw,nh);
-
-		if(n > 1 && i < n - m - 1)
+	/* Fill in nmaster intersections */
+	if (n > m) {
+		nx = wax;
+		for (i = 0; i < m; i++) {
+			if (i > 0) {
+				mvaddch(ny, nx, ACS_PLUS);
+				nx++;
+			}
+			nw = (i < m - 1) ? mw : (wax + waw) - nx;
 			nx += nw;
+		}
 	}
 }

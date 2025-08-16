@@ -1,23 +1,14 @@
-# dvtm version
-VERSION = 0.6
-
 # Customize below to fit your system
 
-PREFIX = /usr/local
+PREFIX ?= /usr/local
 MANPREFIX = ${PREFIX}/share/man
+# specify your systems terminfo directory
+# leave empty to install into your home folder
+TERMINFO := ${DESTDIR}${PREFIX}/share/terminfo
 
-INCS = -I. -I/usr/include/ncursesw -I/usr/local/include/ncursesw
+INCS = -I.
 LIBS = -lc -lutil -lncursesw
-#LIBS = -lc -lutil -lncurses
+CPPFLAGS = -D_POSIX_C_SOURCE=200809L -D_XOPEN_SOURCE=700 -D_XOPEN_SOURCE_EXTENDED
+CFLAGS += -std=c99 ${INCS} -DNDEBUG ${CPPFLAGS}
 
-CFLAGS += -std=c99 ${BUILD_OPTS} ${INCS} -DVERSION=\"${VERSION}\" -DNDEBUG
-LDFLAGS += -L/usr/lib -L/usr/local/lib ${LIBS}
-
-# Mouse handling
-CFLAGS += -DCONFIG_MOUSE
-CFLAGS += -DCONFIG_CMDFIFO
-CFLAGS += -DCONFIG_STATUSBAR
-
-DEBUG_CFLAGS = ${CFLAGS} -UNDEBUG -O0 -g -ggdb -Wall
-
-CC = cc
+CC ?= cc
