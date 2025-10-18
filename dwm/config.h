@@ -69,19 +69,19 @@ static const char cyan[] = "#005577";
 
 
 static const char *tagn[][2] = {
-  {"#91a1c1", "#ecb7dc"},
-  {"#8798c4", "#dcb7dc"},
-  {"#8395c7", "#ccb7dc"},
-  {"#7992ca", "#bcb7dc"},
-  {"#7589ce", "#acb7dc"},
+  {"#eceff4", "#ecb7dc"},
+  {"#ebeef4", "#dcb7dc"},
+  {"#e5e9f0", "#ccb7dc"},
+  {"#dfe5ee", "#bcb7dc"},
+  {"#d8dee9", "#acb7dc"},
 };
 
 static const char *tagy[][2] = {
-  {"#ef616a","#61afef" },
-  {"#de617a","#98fb98" },
-  {"#cd618a","#9c8eff" },
-  {"#bc619a","#ffec2b" },
-  {"#ab61aa","#6ce0d6" },
+  {"#c87a80","#f29f8f" },
+  {"#cc9f4d","#ebcb8b" },
+  {"#559e65","#a3be8c" },
+  {"#588cab","#78acc8" },
+  {"#937ad2","#b48ead" },
 };
 static const unsigned int tagalphas[][2] = {
   { OPAQUE, tagalpha },
