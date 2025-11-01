@@ -6,7 +6,7 @@
  * font: see http://freedesktop.org/software/fontconfig/fontconfig-user.html
  */
 /* static char *font = "FiraCode Nerd Font Mono:size=14"; */
-static char *font = "Maple Mono NF:size=14";
+static char *font = "Monaco Nerd Font:size=12";
 static int borderpx = 2;
 
 /* How to align the content in the window when the size of the terminal
@@ -19,7 +19,7 @@ static int anysize_valign = 50;
 /*
  * What program is execed by st depends of these precedence rules:
  * 1: program passed with -e
- * 2: scroll and/or utmp
+ * 2: croll and/or utmp
  * 3: SHELL environment variable
  * 4: value of shell in /etc/passwd
  * 5: value of shell in config.h
@@ -241,6 +241,8 @@ static Shortcut shortcuts[] = {
 	{ TERMMOD,     XK_Num_Lock, numlock,       {.i =  0} },
 	{ ShiftMask,   XK_Up,       kscrollup,     {.i = -1} },
 	{ ShiftMask,   XK_Down,     kscrolldown,   {.i = -1} },
+	{ 0,           XK_Page_Up,  kscrollup,     {.i = -1}},
+	{ 0,           XK_Page_Down,kscrolldown,   {.i = -1}},
 };
 
 /*

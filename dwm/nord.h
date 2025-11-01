@@ -6,6 +6,45 @@
  * ☭ ☯ ⚛    󰏬 󰴓 󱓷 󱓧 󰍺*/
 
 /*
+#f8fffb*
+#effefa
+#e7fdf8
+#dafcf1
+#beefeb
+
+#f6fef9 oklch(0.99 0.01 160)
+#eefdf4 oklch(0.98 0.02 160)
+#e5fcee oklch(0.97 0.03 160)
+#dcfbe9 oklch(0.96 0.04 160)
+#dafbec oklch(0.96 0.04 166)
+#e0f9ee oklch(0.96 0.03 167)
+
+
+#cffae8 oklch(0.95 0.05 168)
+#d3f9e9 oklch(0.95 0.045 168)
+#d9fbed oklch(0.96 0.04 168)
+#dafbec oklch(0.96 0.04 166)
+#defeee oklch(0.97 0.04 164)
+#e1fdef oklch(0.97 0.035 164)
+#e4fcf0 oklch(0.97 0.03 164)
+#eafaf1 oklch(0.97 0.02 164)
+#edfdf4 oklch(0.98 0.02 162)
+
+#f7fef8 oklch(0.99 0.01 150)
+#f0fcf1 oklch(0.98 0.02 148)
+#e9fbe9 oklch(0.97 0.03 146)
+#e2f9e1 oklch(0.96 0.04 144)
+#dcf8d9 oklch(0.95 0.05 142)
+
+
+#c4f9e5 oklch(0.94 0.06 170)
+#cffae8 oklch(0.95 0.05 168)
+#d9fbed oklch(0.96 0.04 168)
+#e1fdef oklch(0.97 0.035 164)
+#eafef4 oklch(0.98 0.025 163)
+
+#edfdf4 oklch(0.98 0.02 162)
+
 #f18b9b
 #f2859a
 #f27e99

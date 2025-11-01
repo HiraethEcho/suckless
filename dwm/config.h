@@ -44,8 +44,10 @@ static const double inactiveopacity = 0.9f; /* Window opacity when it's inactive
 
 static const int focusonwheel = 1;
 
-static const char *fonts[] = {"Maple Mono NF:size=12"};
-static const char dmenufont[] = "Maple Mono NF:size=12";
+// static const char *fonts[] = {"Maple Mono NF:size=12"};
+// static const char dmenufont[] = "Maple Mono NF:size=12";
+static const char *fonts[] = {"CodeNewRoman Nerd Font Mono:size=14"};
+static const char dmenufont[] = "CodeNewRoman Nerd Font Mono:size=14";
 
 
 #define OPAQUE                  0xffU
@@ -69,18 +71,18 @@ static const char cyan[] = "#005577";
 
 
 static const char *tagn[][2] = {
-  {"#f8fffb", "#acb7dc"},
-  {"#effefa", "#bcb7dc"},
-  {"#e7fdf8", "#ccb7dc"},
-  {"#dafcf1", "#dcb7dc"},
-  {"#beefeb", "#ecb7dc"},
+  {"#c4f9e5", "#ecb7dc"},
+  {"#cffae8", "#dcb7dc"},
+  {"#d9fbed", "#ccb7dc"},
+  {"#e1fdef", "#bcb7dc"},
+  {"#eafef4", "#afb7dc"},
 };
 
 static const char *tagy[][2] = {
-  {"#c87a80","#77a5e5" },
-  {"#bf8f5d","#7da9e2" },
-  {"#559e65","#84acdf" },
-  {"#588cab","#8bb0dc" },
+  {"#c95668","#77a5e5" },
+  {"#ac7a1e","#7da9e2" },
+  {"#1e984b","#84acdf" },
+  {"#347ba2","#8bb0dc" },
   {"#937ad2","#92b3d9" },
 };
 static const unsigned int tagalphas[][2] = {
@@ -121,7 +123,7 @@ static const unsigned int alphas[][3]      = {
 // static const char *launchers[] = {"","󰇩","","󰓓","","",""} ;
 static const char *launchers[] = {"","󰀻","","󰅟"} ;
 // 󰖳    󰃥    󰗚 󰨇 
-static const char *tags[] = {"󰋜", "󰃥", "", "󰖳", ""};
+static const char *tags[] = {"󰋜", "󰗚", "", "󰖳", ""};
 static const int taglayouts[] = { 1, 0, 0, 0, 0, 0 }; //first for viewall tags
                                                       //
 
