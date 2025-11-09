@@ -6,6 +6,19 @@
  * ☭ ☯ ⚛    󰏬 󰴓 󱓷 󱓧 󰍺*/
 
 /*
+#afb7dc
+#bcb7dc
+#ccb7dc
+#dcb7dc
+#ecb7dc
+#fcb7dc
+
+#dfb7d0
+#e7b7d8
+#efb7e0
+#f7b7e8
+#ffb7f0
+
 #f8fffb*
 #effefa
 #e7fdf8
